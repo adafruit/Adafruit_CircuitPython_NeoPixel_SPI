@@ -58,9 +58,9 @@ Usage Example
 .. code-block:: python
 
     import board
-    import neopixel
+    import neopixel_spi
 
-    pixels = neopixel.NeoPixel_SPI(board.SPI(), 10)
+    pixels = neopixel_spi.NeoPixel_SPI(board.SPI(), 10)
     pixels.fill(0xff0000)
 
 Contributing

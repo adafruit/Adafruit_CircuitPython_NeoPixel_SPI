@@ -43,10 +43,20 @@ Implementation Notes
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 """
 
-from neopixel import neopixel, RGB, GRB, RGBW, GRBW
+from neopixel import NeoPixel
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel_SPI.git"
+
+# Pixel color order constants
+RGB = (0, 1, 2)
+"""Red Green Blue"""
+GRB = (1, 0, 2)
+"""Green Red Blue"""
+RGBW = (0, 1, 2, 3)
+"""Red Green Blue White"""
+GRBW = (1, 0, 2, 3)
+"""Green Red Blue White"""
 
 class NeoPixel_SPI(NeoPixel):
     """
@@ -66,9 +76,9 @@ class NeoPixel_SPI(NeoPixel):
     .. code-block:: python
 
         import board
-        import neopixel
+        import neopixel_spi
 
-        pixels = neopixel.NeoPixel_SPI(board.SPI(), 10)
+        pixels = neopixel_spi.NeoPixel_SPI(board.SPI(), 10)
         pixels.fill(0xff0000)
     """
     #pylint: disable=invalid-name, super-init-not-called
