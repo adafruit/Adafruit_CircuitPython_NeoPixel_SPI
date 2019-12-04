@@ -122,6 +122,7 @@ class NeoPixel_SPI(NeoPixel):
         """Shows the new colors on the pixels themselves if they haven't already
         been autowritten."""
         self._transmogrify()
+        #pylint: disable=no-member
         with self._spi as spi:
             # write out special byte sequence surrounded by RESET
             # leading RESET needed for cases where MOSI rests HI
