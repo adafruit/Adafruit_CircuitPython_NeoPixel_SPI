@@ -39,5 +39,5 @@ install:
 script:
   - pylint neopixel_spi.py
   - ([[ ! -d "examples" ]] || pylint --disable=missing-docstring,invalid-name,bad-whitespace examples/*.py)
-  - circuitpython-build-bundles --filename_prefix adafruit-circuitpython-neopixel_spi --library_location .
+  - circuitpython-build-bundles --filename_prefix adafruit-circuitpython-neopixel-spi --library_location .
   - cd docs && sphinx-build -E -W -b html . _build/html && cd ..
