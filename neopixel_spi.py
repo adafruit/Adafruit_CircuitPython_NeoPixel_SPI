@@ -43,6 +43,8 @@ Implementation Notes
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 """
 
+import sys
+sys.modules['neopixel_write'] = __import__('faux_write')
 from neopixel import NeoPixel
 
 __version__ = "0.0.0-auto.0"
@@ -96,7 +98,7 @@ class NeoPixel_SPI(NeoPixel):
             except AttributeError:
                 # use nominal
                 freq = self.FREQ
-        self.RESET = bytes([0]*round(freq*self.TRST))
+        self.RESET = bytes([0]*round(freq * self.TRST / 8))
         self.n = n
         if pixel_order is None:
             self.order = GRBW
