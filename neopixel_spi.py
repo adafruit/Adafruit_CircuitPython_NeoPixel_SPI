@@ -45,13 +45,13 @@ Implementation Notes
 
 # The following creates a mock neopixel_write module to allow importing
 # the CircuitPython NeoPixel module without actually providing neopixel_write.
-#pylint: disable=wrong-import-position
+#pylint: disable=wrong-import-position, exec-used
 import sys
 from types import ModuleType
-mock_module = ModuleType('mock_neopixel_write')
-exec('def neopixel_write(): pass', mock_module.__dict__)
-sys.modules['neopixel_write'] = mock_module
-#pylint: enable=wrong-import-position
+MOCK_MODULE = ModuleType('mock_neopixel_write')
+exec('def neopixel_write(): pass', MOCK_MODULE.__dict__)
+sys.modules['neopixel_write'] = MOCK_MODULE
+#pylint: enable=wrong-import-position, exec-used
 
 from neopixel import NeoPixel
 
