@@ -43,8 +43,16 @@ Implementation Notes
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 """
 
+# The following creates a mock neopixel_write module to allow importing
+# the CircuitPython NeoPixel module without actually providing neopixel_write.
+#pylint: disable=wrong-import-position
 import sys
-sys.modules['neopixel_write'] = __import__('faux_write')
+from types import ModuleType
+mock_neopixel_write = ModuleType('mock_neopixel_write')
+exec('def neopixel_write(): pass', mock_neopixel_write.__dict__)
+sys.modules['neopixel_write'] = mock_neopixel_write
+#pylint: enable=wrong-import-position
+
 from neopixel import NeoPixel
 
 __version__ = "0.0.0-auto.0"
@@ -59,6 +67,12 @@ RGBW = (0, 1, 2, 3)
 """Red Green Blue White"""
 GRBW = (1, 0, 2, 3)
 """Green Red Blue White"""
+
+def neopixel_write():
+    """This is a stub function to satisfy the base NeoPixel library.
+       It should never be called.
+    """
+    raise RuntimeError("Function should never be called.")
 
 class NeoPixel_SPI(NeoPixel):
     """
