@@ -48,9 +48,9 @@ Implementation Notes
 #pylint: disable=wrong-import-position
 import sys
 from types import ModuleType
-mock_neopixel_write = ModuleType('mock_neopixel_write')
-exec('def neopixel_write(): pass', mock_neopixel_write.__dict__)
-sys.modules['neopixel_write'] = mock_neopixel_write
+mock_module = ModuleType('mock_neopixel_write')
+exec('def neopixel_write(): pass', mock_module.__dict__)
+sys.modules['neopixel_write'] = mock_module
 #pylint: enable=wrong-import-position
 
 from neopixel import NeoPixel
@@ -67,12 +67,6 @@ RGBW = (0, 1, 2, 3)
 """Red Green Blue White"""
 GRBW = (1, 0, 2, 3)
 """Green Red Blue White"""
-
-def neopixel_write():
-    """This is a stub function to satisfy the base NeoPixel library.
-       It should never be called.
-    """
-    raise RuntimeError("Function should never be called.")
 
 class NeoPixel_SPI(NeoPixel):
     """
