@@ -9,8 +9,8 @@ Introduction
     :target: https://discord.gg/nBQh6qu
     :alt: Discord
 
-.. image:: https://travis-ci.com/adafruit/Adafruit_CircuitPython_NeoPixel_SPI.svg?branch=master
-    :target: https://travis-ci.com/adafruit/Adafruit_CircuitPython_NeoPixel_SPI
+.. image:: https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel_SPI/workflows/Build%20CI/badge.svg
+    :target: https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel_SPI/actions/
     :alt: Build Status
 
 SPI driven CircuitPython driver for NeoPixels.
