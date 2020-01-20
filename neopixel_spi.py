@@ -91,7 +91,7 @@ class NeoPixel_SPI(NeoPixel):
         pixels = neopixel_spi.NeoPixel_SPI(board.SPI(), 10)
         pixels.fill(0xff0000)
     """
-    #pylint: disable=invalid-name, super-init-not-called
+    #pylint: disable=invalid-name, super-init-not-called, too-many-instance-attributes
 
     FREQ = 6400000  # 800kHz * 8, actual may be different
     TRST = 80e-6    # Reset code low level time
