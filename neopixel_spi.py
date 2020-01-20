@@ -59,13 +59,13 @@ __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel_SPI.git"
 
 # Pixel color order constants
-RGB = (0, 1, 2)
+RGB = 'RGB'
 """Red Green Blue"""
-GRB = (1, 0, 2)
+GRB = 'GRB'
 """Green Red Blue"""
-RGBW = (0, 1, 2, 3)
+RGBW = 'RGBW'
 """Red Green Blue White"""
-GRBW = (1, 0, 2, 3)
+GRBW = 'GRBW'
 """Green Red Blue White"""
 
 class NeoPixel_SPI(NeoPixel):
@@ -97,6 +97,39 @@ class NeoPixel_SPI(NeoPixel):
     TRST = 80e-6    # Reset code low level time
 
     def __init__(self, spi, n, *, bpp=3, brightness=1.0, auto_write=True, pixel_order=None):
+        # We can't call super().__init__() since we don't actually
+        # have a pin to supply it. So setup is done manually.
+        #
+        # neopixel stuff
+        #
+        self.bpp = bpp
+        self.n = n
+        if not pixel_order:
+            pixel_order = GRB if bpp == 3 else GRBW
+        else:
+            self.bpp = bpp = len(pixel_order)
+        #
+        # pypixelbuf stuff
+        #
+        bpp, byteorder_tuple, has_white, _ = self.parse_byteorder(pixel_order)
+        self._pixels = n
+        self._bytes = bpp * n
+        self._byteorder = byteorder_tuple
+        self._byteorder_string = pixel_order
+        self._has_white = has_white
+        self._bpp = bpp
+        self._bytearray = bytearray(n * bpp)
+        self._two_buffers = True
+        self._rawbytearray = bytearray(n * bpp)
+        self._offset = 0
+        self._dotstar_mode = False
+        self._pixel_step = bpp
+        self.auto_write = False
+        self.brightness = min(1.0, max(0, brightness))
+        self.auto_write = auto_write
+        #
+        # neopixel_spi stuff
+        #
         from adafruit_bus_device.spi_device import SPIDevice
         self._spi = SPIDevice(spi, baudrate=self.FREQ)
         with self._spi as spibus:
@@ -107,25 +140,11 @@ class NeoPixel_SPI(NeoPixel):
                 # use nominal
                 freq = self.FREQ
         self.RESET = bytes([0]*round(freq * self.TRST / 8))
-        self.n = n
-        if pixel_order is None:
-            self.order = GRBW
-            self.bpp = bpp
-        else:
-            self.order = pixel_order
-            self.bpp = len(self.order)
-        self.buf = bytearray(self.n * self.bpp)
-        self.spibuf = bytearray(8*len(self.buf))
-        # Set auto_write to False temporarily so brightness setter does _not_
-        # call show() while in __init__.
-        self.auto_write = False
-        self.brightness = brightness
-        self.auto_write = auto_write
+        self.spibuf = bytearray(8 * n * bpp)
 
     def deinit(self):
         """Blank out the NeoPixels."""
-        for i in range(len(self.buf)):
-            self.buf[i] = 0
+        self.fill(0)
         self.show()
 
     def show(self):
