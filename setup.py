@@ -36,7 +36,7 @@ setup(
     install_requires=[
         'Adafruit-Blinka',
         'adafruit-circuitpython-busdevice',
-        'adafruit-circuitpython-neopixel'
+        'adafruit-circuitpython-pypixelbuf'
     ],
 
     # Choose your license
