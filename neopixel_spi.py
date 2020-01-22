@@ -44,6 +44,7 @@ Implementation Notes
 """
 
 from adafruit_pypixelbuf import PixelBuf, fill
+from adafruit_bus_device.spi_device import SPIDevice
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel_SPI.git"
@@ -81,7 +82,6 @@ class NeoPixel_SPI(PixelBuf):
         pixels = neopixel_spi.NeoPixel_SPI(board.SPI(), 10)
         pixels.fill(0xff0000)
     """
-    #pylint: disable=invalid-name
 
     FREQ = 6400000  # 800kHz * 8, actual may be different
     TRST = 80e-6    # Reset code low level time
@@ -95,7 +95,6 @@ class NeoPixel_SPI(PixelBuf):
             bpp = len(pixel_order)
 
         # set up SPI related stuff
-        from adafruit_bus_device.spi_device import SPIDevice
         self._spi = SPIDevice(spi, baudrate=self.FREQ)
         with self._spi as spibus:
             try:
