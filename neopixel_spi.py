@@ -103,7 +103,7 @@ class NeoPixel_SPI(PixelBuf):
             except AttributeError:
                 # use nominal
                 freq = self.FREQ
-        self.RESET = bytes([0]*round(freq * self.TRST / 8))
+        self._reset = bytes([0]*round(freq * self.TRST / 8))
         self.spibuf = bytearray(8 * n * bpp)
 
         # everything else taken care of by base class
@@ -126,7 +126,7 @@ class NeoPixel_SPI(PixelBuf):
         with self._spi as spi:
             # write out special byte sequence surrounded by RESET
             # leading RESET needed for cases where MOSI rests HI
-            spi.write(self.RESET + self.spibuf + self.RESET)
+            spi.write(self._reset + self.spibuf + self._reset)
 
     def _transmogrify(self):
         """Turn every BIT of buf into a special BYTE pattern."""
