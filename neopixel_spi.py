@@ -43,8 +43,17 @@ Implementation Notes
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 """
 
+# pylint: disable=ungrouped-imports
+import sys
 from adafruit_bus_device.spi_device import SPIDevice
-from adafruit_pypixelbuf import PixelBuf, fill
+
+if sys.implementation.version[0] < 5:
+    import adafruit_pypixelbuf as _pixelbuf
+else:
+    try:
+        import _pixelbuf
+    except ImportError:
+        import adafruit_pypixelbuf as _pixelbuf
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel_SPI.git"
@@ -60,7 +69,7 @@ GRBW = "GRBW"
 """Green Red Blue White"""
 
 
-class NeoPixel_SPI(PixelBuf):
+class NeoPixel_SPI(_pixelbuf.PixelBuf):
     """
     A sequence of neopixels.
 
@@ -96,6 +105,9 @@ class NeoPixel_SPI(PixelBuf):
             pixel_order = GRB if bpp == 3 else GRBW
         else:
             bpp = len(pixel_order)
+            if isinstance(pixel_order, tuple):
+                order_list = [RGBW[order] for order in pixel_order]
+                pixel_order = "".join(order_list)
 
         # set up SPI related stuff
         self._spi = SPIDevice(spi, baudrate=self.FREQ)
@@ -111,12 +123,7 @@ class NeoPixel_SPI(PixelBuf):
 
         # everything else taken care of by base class
         super().__init__(
-            n,
-            bytearray(n * bpp),
-            brightness=brightness,
-            rawbuf=bytearray(n * bpp),
-            byteorder=pixel_order,
-            auto_write=auto_write,
+            n, brightness=brightness, byteorder=pixel_order, auto_write=auto_write
         )
 
     def deinit(self):
@@ -124,21 +131,30 @@ class NeoPixel_SPI(PixelBuf):
         self.fill(0)
         self.show()
 
-    def show(self):
+    def __repr__(self):
+        return "[" + ", ".join([str(x) for x in self]) + "]"
+
+    @property
+    def n(self):
+        """
+        The number of neopixels in the chain (read-only)
+        """
+        return len(self)
+
+    def _transmit(self, buffer):
         """Shows the new colors on the pixels themselves if they haven't already
         been autowritten."""
-        self._transmogrify()
+        self._transmogrify(buffer)
         # pylint: disable=no-member
         with self._spi as spi:
             # write out special byte sequence surrounded by RESET
             # leading RESET needed for cases where MOSI rests HI
             spi.write(self._reset + self.spibuf + self._reset)
 
-    def _transmogrify(self):
+    def _transmogrify(self, buffer):
         """Turn every BIT of buf into a special BYTE pattern."""
         k = 0
-        for byte in self.buf:
-            byte = int(byte * self.brightness)
+        for byte in buffer:
             # MSB first
             for i in range(7, -1, -1):
                 if byte >> i & 0x01:
@@ -146,7 +162,3 @@ class NeoPixel_SPI(PixelBuf):
                 else:
                     self.spibuf[k] = 0b11000000  # A NeoPixel 0 bit
                 k += 1
-
-    def fill(self, color):
-        """Colors all pixels the given ***color***."""
-        fill(self, color)
