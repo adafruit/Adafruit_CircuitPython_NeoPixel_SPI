@@ -158,7 +158,7 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
             # MSB first
             for i in range(7, -1, -1):
                 if byte >> i & 0x01:
-                    self.spibuf[k] = 0b11110000  # A NeoPixel 1 bit
+                    self.spibuf[k] = 0b11111000  # A NeoPixel 1 bit
                 else:
                     self.spibuf[k] = 0b11000000  # A NeoPixel 0 bit
                 k += 1
