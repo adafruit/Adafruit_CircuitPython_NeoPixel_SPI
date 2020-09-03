@@ -81,6 +81,7 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
     :param bool auto_write: True if the neopixels should immediately change when set. If False,
       `show` must be called explicitly.
     :param tuple pixel_order: Set the pixel color channel order. GRBW is set by default.
+    :param frequency: Set SPI bus frequency. For 800kHz NeoPixels, use 6400000. For 400kHz, use 3200000.
 
     Example:
 
@@ -93,11 +94,16 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
         pixels.fill(0xff0000)
     """
 
-    FREQ = 6400000  # 800kHz * 8, actual may be different
-    TRST = 80e-6  # Reset code low level time
-
     def __init__(
-        self, spi, n, *, bpp=3, brightness=1.0, auto_write=True, pixel_order=None
+        self,
+        spi,
+        n,
+        *,
+        bpp=3,
+        brightness=1.0,
+        auto_write=True,
+        pixel_order=None,
+        frequency=6400000
     ):
 
         # configure bpp and pixel_order
@@ -109,17 +115,22 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
                 order_list = [RGBW[order] for order in pixel_order]
                 pixel_order = "".join(order_list)
 
+        # neopixel stuff
+        self._bit0 = 0b11000000  # A NeoPixel 0 bit
+        self._bit1 = 0b11110000  # A NeoPixel 1 bit
+        self._trst = 80e-6  # Reset code low level time
+
         # set up SPI related stuff
-        self._spi = SPIDevice(spi, baudrate=self.FREQ)
+        self._spi = SPIDevice(spi, baudrate=frequency)
         with self._spi as spibus:
             try:
                 # get actual SPI frequency
-                freq = spibus.frequency
+                self._freq = spibus.frequency
             except AttributeError:
                 # use nominal
-                freq = self.FREQ
-        self._reset = bytes([0] * round(freq * self.TRST / 8))
-        self.spibuf = bytearray(8 * n * bpp)
+                self._freq = frequency
+        self._reset = bytes([0] * round(self._freq * self._trst / 8))
+        self._spibuf = bytearray(8 * n * bpp)
 
         # everything else taken care of by base class
         super().__init__(
@@ -137,9 +148,43 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
     @property
     def n(self):
         """
-        The number of neopixels in the chain (read-only)
+        The number of neopixels in the chain (read-only).
         """
         return len(self)
+
+    @property
+    def reset_time(self):
+        """
+        The reset time in seconds.
+        """
+        return self._trst
+
+    @reset_time.setter
+    def reset_time(self, trst):
+        self._trst = trst
+        self._reset = bytes([0] * round(self._freq * self._trst / 8))
+
+    @property
+    def bit0(self):
+        """
+        Byte that defines timing for a NeoPixel 0 bit.
+        """
+        return self._bit0
+
+    @bit0.setter
+    def bit0(self, pattern):
+        self._bit0 = pattern
+
+    @property
+    def bit1(self):
+        """
+        Byte that defines timing for a NeoPixel 1 bit.
+        """
+        return self._bit1
+
+    @bit1.setter
+    def bit1(self, pattern):
+        self._bit1 = pattern
 
     def _transmit(self, buffer):
         """Shows the new colors on the pixels themselves if they haven't already
@@ -149,7 +194,7 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
         with self._spi as spi:
             # write out special byte sequence surrounded by RESET
             # leading RESET needed for cases where MOSI rests HI
-            spi.write(self._reset + self.spibuf + self._reset)
+            spi.write(self._reset + self._spibuf + self._reset)
 
     def _transmogrify(self, buffer):
         """Turn every BIT of buf into a special BYTE pattern."""
@@ -158,7 +203,7 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
             # MSB first
             for i in range(7, -1, -1):
                 if byte >> i & 0x01:
-                    self.spibuf[k] = 0b11110000  # A NeoPixel 1 bit
+                    self._spibuf[k] = self._bit1  # A NeoPixel 1 bit
                 else:
-                    self.spibuf[k] = 0b11000000  # A NeoPixel 0 bit
+                    self._spibuf[k] = self._bit0  # A NeoPixel 0 bit
                 k += 1
