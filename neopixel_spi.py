@@ -79,7 +79,7 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
     :param float brightness: Brightness of the pixels between 0.0 and 1.0 where 1.0 is full
       brightness
     :param bool auto_write: True if the neopixels should immediately change when set. If False,
-      `show` must be called explicitly.
+      ``show`` must be called explicitly.
     :param tuple pixel_order: Set the pixel color channel order. GRBW is set by default.
     :param frequency: Set SPI bus frequency. For 800kHz NeoPixels, use 6400000. For 400kHz,
       use 3200000.
