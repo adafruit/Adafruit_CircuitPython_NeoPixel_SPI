@@ -79,8 +79,12 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
     :param float brightness: Brightness of the pixels between 0.0 and 1.0 where 1.0 is full
       brightness
     :param bool auto_write: True if the neopixels should immediately change when set. If False,
-      `show` must be called explicitly.
+      ``show`` must be called explicitly.
     :param tuple pixel_order: Set the pixel color channel order. GRBW is set by default.
+    :param int frequency: SPI bus frequency. For 800kHz NeoPixels, use 6400000 (default). For 400kHz, use 3200000.
+    :param float reset_time: Reset low level time in seconds. Default is 80e-6.
+    :param byte bit0: Bit pattern to set timing for a NeoPixel 0 bit.
+    :param byte bit1: Bit pattern to set timing for a NeoPixel 1 bit.
 
     Example:
 
@@ -93,11 +97,19 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
         pixels.fill(0xff0000)
     """
 
-    FREQ = 6400000  # 800kHz * 8, actual may be different
-    TRST = 80e-6  # Reset code low level time
-
     def __init__(
-        self, spi, n, *, bpp=3, brightness=1.0, auto_write=True, pixel_order=None
+        self,
+        spi,
+        n,
+        *,
+        bpp=3,
+        brightness=1.0,
+        auto_write=True,
+        pixel_order=None,
+        frequency=6400000,
+        reset_time=80e-6,
+        bit0=0b11000000,
+        bit1=0b11110000
     ):
 
         # configure bpp and pixel_order
@@ -109,17 +121,22 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
                 order_list = [RGBW[order] for order in pixel_order]
                 pixel_order = "".join(order_list)
 
+        # neopixel stuff
+        self._bit0 = bit0
+        self._bit1 = bit1
+        self._trst = reset_time
+
         # set up SPI related stuff
-        self._spi = SPIDevice(spi, baudrate=self.FREQ)
+        self._spi = SPIDevice(spi, baudrate=frequency)
         with self._spi as spibus:
             try:
                 # get actual SPI frequency
                 freq = spibus.frequency
             except AttributeError:
                 # use nominal
-                freq = self.FREQ
-        self._reset = bytes([0] * round(freq * self.TRST / 8))
-        self.spibuf = bytearray(8 * n * bpp)
+                freq = sfrequency
+        self._reset = bytes([0] * round(freq * self._trst / 8))
+        self._spibuf = bytearray(8 * n * bpp)
 
         # everything else taken care of by base class
         super().__init__(
@@ -149,7 +166,7 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
         with self._spi as spi:
             # write out special byte sequence surrounded by RESET
             # leading RESET needed for cases where MOSI rests HI
-            spi.write(self._reset + self.spibuf + self._reset)
+            spi.write(self._reset + self._spibuf + self._reset)
 
     def _transmogrify(self, buffer):
         """Turn every BIT of buf into a special BYTE pattern."""
@@ -158,7 +175,7 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
             # MSB first
             for i in range(7, -1, -1):
                 if byte >> i & 0x01:
-                    self.spibuf[k] = 0b11110000  # A NeoPixel 1 bit
+                    self._spibuf[k] = self._bit1  # A NeoPixel 1 bit
                 else:
-                    self.spibuf[k] = 0b11000000  # A NeoPixel 0 bit
+                    self._spibuf[k] = self._bit0  # A NeoPixel 0 bit
                 k += 1
