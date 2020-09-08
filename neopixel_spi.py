@@ -81,7 +81,8 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
     :param bool auto_write: True if the neopixels should immediately change when set. If False,
       ``show`` must be called explicitly.
     :param tuple pixel_order: Set the pixel color channel order. GRBW is set by default.
-    :param int frequency: SPI bus frequency. For 800kHz NeoPixels, use 6400000 (default). For 400kHz, use 3200000.
+    :param int frequency: SPI bus frequency. For 800kHz NeoPixels, use 6400000 (default). For 400kHz,
+      use 3200000.
     :param float reset_time: Reset low level time in seconds. Default is 80e-6.
     :param byte bit0: Bit pattern to set timing for a NeoPixel 0 bit.
     :param byte bit1: Bit pattern to set timing for a NeoPixel 1 bit.
@@ -134,7 +135,7 @@ class NeoPixel_SPI(_pixelbuf.PixelBuf):
                 freq = spibus.frequency
             except AttributeError:
                 # use nominal
-                freq = sfrequency
+                freq = frequency
         self._reset = bytes([0] * round(freq * self._trst / 8))
         self._spibuf = bytearray(8 * n * bpp)
 
