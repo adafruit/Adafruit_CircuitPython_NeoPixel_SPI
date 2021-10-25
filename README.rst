@@ -64,6 +64,11 @@ Usage Example
     pixels = neopixel_spi.NeoPixel_SPI(board.SPI(), 10)
     pixels.fill(0xff0000)
 
+Documentation
+=============
+
+API documentation for this library can be found on `Read the Docs <https://circuitpython.readthedocs.io/projects/neopixel_spi/en/latest/>`_.
+
 Contributing
 ============
 
