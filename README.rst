@@ -22,7 +22,7 @@ This driver depends on:
 
 * `Adafruit CircuitPython <https://github.com/adafruit/circuitpython>`_
 * `Bus Device <https://github.com/adafruit/Adafruit_CircuitPython_BusDevice>`_
-* `Pypixelbuf <https://github.com/adafruit/Adafruit_CircuitPython_Pypixelbuf>`_
+* `Pixelbuf <https://github.com/adafruit/Adafruit_CircuitPython_Pixelbuf>`_
 
 Please ensure all dependencies are available on the CircuitPython filesystem.
 This is easily achieved by downloading

@@ -26,17 +26,10 @@ Implementation Notes
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 """
 
-# pylint: disable=ungrouped-imports
-import sys
+import adafruit_pixelbuf
+
 from adafruit_bus_device.spi_device import SPIDevice
 
-if sys.implementation.version[0] < 5:
-    import adafruit_pypixelbuf as _pixelbuf
-else:
-    try:
-        import _pixelbuf
-    except ImportError:
-        import adafruit_pypixelbuf as _pixelbuf
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel_SPI.git"
@@ -52,7 +45,7 @@ GRBW = "GRBW"
 """Green Red Blue White"""
 
 
-class NeoPixel_SPI(_pixelbuf.PixelBuf):
+class NeoPixel_SPI(adafruit_pixelbuf.PixelBuf):
     """
     A sequence of neopixels.
 
