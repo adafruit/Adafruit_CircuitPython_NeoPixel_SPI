@@ -120,7 +120,9 @@ class NeoPixel_SPI(adafruit_pixelbuf.PixelBuf):
         self._spibuf = bytearray(8 * n * bpp)
 
         # everything else taken care of by base class
-        super().__init__(size=n, brightness=brightness, byteorder=pixel_order, auto_write=auto_write)
+        super().__init__(
+            size=n, brightness=brightness, byteorder=pixel_order, auto_write=auto_write
+        )
 
     def deinit(self) -> None:
         """Blank out the NeoPixels."""
