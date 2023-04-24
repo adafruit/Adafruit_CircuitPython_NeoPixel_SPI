@@ -25,23 +25,27 @@ Implementation Notes
 
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 """
+try:
+    from typing import Optional, Tuple, Union
+
+    from busio import SPI
+except ImportError:
+    pass
 
 import adafruit_pixelbuf
-
 from adafruit_bus_device.spi_device import SPIDevice
-
 
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel_SPI.git"
 
 # Pixel color order constants
-RGB = "RGB"
+RGB: str = "RGB"
 """Red Green Blue"""
-GRB = "GRB"
+GRB: str = "GRB"
 """Green Red Blue"""
-RGBW = "RGBW"
+RGBW: str = "RGBW"
 """Red Green Blue White"""
-GRBW = "GRBW"
+GRBW: str = "GRBW"
 """Green Red Blue White"""
 
 
@@ -57,6 +61,7 @@ class NeoPixel_SPI(adafruit_pixelbuf.PixelBuf):
     :param bool auto_write: True if the neopixels should immediately change when set. If False,
       ``show`` must be called explicitly.
     :param tuple pixel_order: Set the pixel color channel order. GRBW is set by default.
+      pixel_order may be a string or a tuple of integers with values between 0 and 3.
     :param int frequency: SPI bus frequency. For 800kHz NeoPixels, use 6400000 (default).
       For 400kHz, use 3200000.
     :param float reset_time: Reset low level time in seconds. Default is 80e-6.
@@ -76,19 +81,18 @@ class NeoPixel_SPI(adafruit_pixelbuf.PixelBuf):
 
     def __init__(
         self,
-        spi,
-        n,
+        spi: SPI,
+        n: int,
         *,
-        bpp=3,
-        brightness=1.0,
-        auto_write=True,
-        pixel_order=None,
-        frequency=6400000,
-        reset_time=80e-6,
-        bit0=0b11000000,
-        bit1=0b11110000
-    ):
-
+        bpp: int = 3,
+        brightness: float = 1.0,
+        auto_write: bool = True,
+        pixel_order: Optional[Union[str, Tuple[int, ...]]] = None,
+        frequency: int = 6400000,
+        reset_time: float = 80e-6,
+        bit0: int = 0b11000000,
+        bit1: int = 0b11110000
+    ) -> None:
         # configure bpp and pixel_order
         if not pixel_order:
             pixel_order = GRB if bpp == 3 else GRBW
@@ -116,26 +120,24 @@ class NeoPixel_SPI(adafruit_pixelbuf.PixelBuf):
         self._spibuf = bytearray(8 * n * bpp)
 
         # everything else taken care of by base class
-        super().__init__(
-            n, brightness=brightness, byteorder=pixel_order, auto_write=auto_write
-        )
+        super().__init__(size=n, brightness=brightness, byteorder=pixel_order, auto_write=auto_write)
 
-    def deinit(self):
+    def deinit(self) -> None:
         """Blank out the NeoPixels."""
         self.fill(0)
         self.show()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "[" + ", ".join([str(x) for x in self]) + "]"
 
     @property
-    def n(self):
+    def n(self) -> int:
         """
         The number of neopixels in the chain (read-only)
         """
         return len(self)
 
-    def _transmit(self, buffer):
+    def _transmit(self, buffer: bytearray) -> None:
         """Shows the new colors on the pixels themselves if they haven't already
         been autowritten."""
         self._transmogrify(buffer)
@@ -145,7 +147,7 @@ class NeoPixel_SPI(adafruit_pixelbuf.PixelBuf):
             # leading RESET needed for cases where MOSI rests HI
             spi.write(self._reset + self._spibuf + self._reset)
 
-    def _transmogrify(self, buffer):
+    def _transmogrify(self, buffer: bytearray) -> None:
         """Turn every BIT of buf into a special BYTE pattern."""
         k = 0
         for byte in buffer:
