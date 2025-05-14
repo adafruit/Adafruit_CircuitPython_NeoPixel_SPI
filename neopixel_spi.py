@@ -25,6 +25,7 @@ Implementation Notes
 
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 """
+
 try:
     from typing import Optional, Tuple, Union
 
@@ -91,7 +92,7 @@ class NeoPixel_SPI(adafruit_pixelbuf.PixelBuf):
         frequency: int = 6400000,
         reset_time: float = 80e-6,
         bit0: int = 0b11000000,
-        bit1: int = 0b11110000
+        bit1: int = 0b11110000,
     ) -> None:
         # configure bpp and pixel_order
         if not pixel_order:
@@ -143,7 +144,6 @@ class NeoPixel_SPI(adafruit_pixelbuf.PixelBuf):
         """Shows the new colors on the pixels themselves if they haven't already
         been autowritten."""
         self._transmogrify(buffer)
-        # pylint: disable=no-member
         with self._spi as spi:
             # write out special byte sequence surrounded by RESET
             # leading RESET needed for cases where MOSI rests HI
